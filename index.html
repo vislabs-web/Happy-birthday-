@@ -11,12 +11,13 @@
 
     <style>
         :root {
-            /* Vibrant Palette */
+            /* Palette */
             --primary: #ff7eb3;
             --secondary: #ff758c;
             --accent: #feca57;
-            --dark-bg: #2d3436;
-            --glass: rgba(255, 255, 255, 0.15);
+            --glass: rgba(255, 255, 255, 0.2);
+            --podium: #00b894;
+            --podium-dark: #00a884;
             
             /* Character Colors */
             --skin: #ffdbac;
@@ -28,7 +29,8 @@
             margin: 0;
             padding: 0;
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            /* Darker Blue-ish background to make decorations pop like the reference */
+            background: linear-gradient(135deg, #2c3e50, #3498db, #2980b9); 
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             color: white;
@@ -45,42 +47,29 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* --- Floating Balloons Background --- */
-        .balloon-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .balloon {
+        /* --- Background Floating Shapes (The triangles/dots from image) --- */
+        .shape {
             position: absolute;
-            bottom: -100px;
-            width: 40px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.2);
+            z-index: 0;
+            opacity: 0.6;
+            animation: floatShape 20s infinite linear;
+        }
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid var(--accent);
+        }
+        .circle {
+            width: 15px;
+            height: 15px;
+            background: var(--primary);
             border-radius: 50%;
-            animation: floatUp 10s linear infinite;
         }
-
-        .balloon::before {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 30px;
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        @keyframes floatUp {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-120vh) rotate(20deg); opacity: 0; }
+        @keyframes floatShape {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
         }
 
         /* --- Entrance Screen --- */
@@ -98,14 +87,14 @@
             transition: opacity 1s ease;
         }
 
-        .gift-box {
+        .gift-box-trigger {
             font-size: 6rem;
             cursor: pointer;
             animation: bounce 2s infinite;
             filter: drop-shadow(0 0 30px var(--primary));
             transition: transform 0.3s;
         }
-        .gift-box:hover { transform: scale(1.1); }
+        .gift-box-trigger:hover { transform: scale(1.1); }
 
         /* --- Main Content Layout --- */
         #main-content {
@@ -115,213 +104,292 @@
             max-width: 800px;
             width: 90%;
             text-align: center;
-            padding: 50px 0;
+            padding: 30px 0;
             display: none; 
+            z-index: 10;
+        }
+
+        /* --- Ribbon Banner --- */
+        .ribbon-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+        .ribbon {
+            background: #6c5ce7; /* Purple from image */
+            color: #fff;
+            padding: 15px 40px;
+            position: relative;
+            border-radius: 5px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transform: skewY(-2deg);
+        }
+        .ribbon::before, .ribbon::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            z-index: -1;
+            border: 20px solid #4834d4; /* Darker purple */
+        }
+        .ribbon::before {
+            left: -20px;
+            border-left-color: transparent;
+        }
+        .ribbon::after {
+            right: -20px;
+            border-right-color: transparent;
         }
 
         h1 {
-            font-family: 'Pacifico', cursive; /* Fancy Font */
-            font-size: 4rem;
-            color: #fff;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
-            margin-bottom: 10px;
-            line-height: 1.2;
+            font-family: 'Pacifico', cursive;
+            font-size: 3rem;
+            margin: 0;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+            transform: skewY(2deg); /* Counter skew text */
         }
 
-        p.subtitle {
-            font-size: 1.2rem;
-            font-weight: 300;
-            background: rgba(0,0,0,0.2);
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            margin-bottom: 40px;
-        }
-
-        /* Premium Glass Card */
-        .card {
-            background: var(--glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-        }
-
-        /* --- CSS Character Section --- */
-        .character-card {
+        /* --- Stage Area (Podium + Character) --- */
+        .stage-area {
             position: relative;
-            overflow: hidden;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 400px; /* Space for char + podium */
         }
 
-        /* Glowing Aura behind character */
-        .aura {
+        /* The Podium Box */
+        .podium {
             position: absolute;
-            top: 50%;
+            bottom: 0;
+            width: 320px;
+            height: 80px;
+            background: var(--podium);
+            border-radius: 10px 10px 0 0;
+            box-shadow: 0 10px 0 var(--podium-dark);
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .podium-text {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.9);
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        /* --- Gift Boxes Decoration --- */
+        .gift-decor {
+            position: absolute;
+            bottom: 80px; /* Sit on podium */
+            z-index: 2;
+        }
+
+        /* Left Gift (Red Striped) */
+        .gift-left {
             left: 50%;
-            transform: translate(-50%, -50%);
-            width: 250px;
-            height: 250px;
-            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 70%);
-            z-index: 0;
-            animation: pulseAura 3s infinite ease-in-out;
+            transform: translateX(-160px); /* Move to left edge of podium */
+            width: 50px;
+            height: 50px;
+            background: #ff7675;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+        .gift-left::before { /* Stripe */
+            content: '';
+            position: absolute;
+            left: 20px;
+            width: 10px;
+            height: 100%;
+            background: white;
+        }
+        .gift-left::after { /* Lid */
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -5px;
+            width: 60px;
+            height: 15px;
+            background: #d63031;
+            border-radius: 2px;
         }
 
-        @keyframes pulseAura {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        /* Right Gift (Yellow) */
+        .gift-right {
+            right: 50%;
+            transform: translateX(160px); /* Move to right edge of podium */
+            width: 40px;
+            height: 60px;
+            background: #f1c40f;
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            background-image: radial-gradient(#fff 20%, transparent 20%);
+            background-size: 10px 10px;
+        }
+        .gift-right::after { /* Bow */
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 10px;
+            width: 20px;
+            height: 10px;
+            background: #0984e3;
+            border-radius: 50%;
         }
 
+        /* --- Character & Cake Container --- */
+        .actors-container {
+            position: absolute;
+            bottom: 70px; /* Stand on podium */
+            z-index: 5;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        /* --- Reused Character Styles --- */
         .character-container {
             position: relative;
-            width: 200px;
-            height: 300px;
-            z-index: 2;
+            width: 130px;
+            height: 200px;
         }
-
-        /* Body Parts */
         .hair-back {
             position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 150px;
-            height: 160px;
-            background: var(--hair);
-            border-radius: 50% 50% 40% 40%;
+            top: 10px; left: 50%; transform: translateX(-50%);
+            width: 100px; height: 110px;
+            background: var(--hair); border-radius: 50% 50% 40% 40%;
             z-index: 1;
         }
-
         .neck {
-            position: absolute;
-            top: 140px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 30px;
-            background: var(--skin);
-            z-index: 2;
+            position: absolute; top: 90px; left: 50%; transform: translateX(-50%);
+            width: 20px; height: 20px; background: var(--skin); z-index: 2;
         }
-
         .dress-body {
-            position: absolute;
-            top: 160px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 120px;
+            position: absolute; top: 105px; left: 50%; transform: translateX(-50%);
+            width: 80px; height: 80px;
             background: var(--dress-color);
             border-radius: 50% 50% 10px 10px / 80% 80% 10px 10px;
             z-index: 3;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            background-image: radial-gradient(circle, rgba(255,255,255,0.2) 2px, transparent 2.5px); /* Polka dots */
-            background-size: 15px 15px;
+            /* Added a badge like image */
+            display: flex; justify-content: center; align-items: center;
         }
-
+        .badge {
+            width: 20px; height: 20px; background: #feca57; border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
         .legs {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 40px;
-            display: flex;
-            justify-content: space-between;
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 50px; height: 30px; display: flex; justify-content: space-between;
         }
-        .leg {
-            width: 25px;
-            height: 100%;
-            background: var(--skin);
-            border-radius: 0 0 10px 10px;
-        }
-
-        /* FACE AREA */
+        .leg { width: 15px; height: 100%; background: var(--skin); border-radius: 0 0 10px 10px; }
         .face-container {
-            position: absolute;
-            top: 35px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px; 
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid var(--skin);
-            overflow: hidden;
-            z-index: 5;
-            background: var(--skin);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            width: 80px; height: 80px;
+            border-radius: 50%; border: 3px solid var(--skin);
+            overflow: hidden; z-index: 5; background: var(--skin);
         }
+        .face-container img { width: 100%; height: 100%; object-fit: cover; }
 
-        .face-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        /* --- Reused Cake Styles --- */
+        .cake-container {
+            position: relative; width: 80px; height: 80px;
         }
+        .cake-layer { position: absolute; left: 50%; transform: translateX(-50%); border-radius: 10px 10px 0 0; }
+        .layer-bottom { bottom: 0; width: 70px; height: 35px; background: #f78fb3; box-shadow: 0 4px 0 #e66767; }
+        .layer-top { bottom: 35px; width: 55px; height: 30px; background: #f3a683; box-shadow: 0 4px 0 #e15f41; }
+        .icing { position: absolute; top: 0; left: 0; width: 100%; height: 8px; background: #fff; border-radius: 10px 10px 0 0; }
+        .candle {
+            position: absolute; bottom: 65px; left: 50%; transform: translateX(-50%);
+            width: 6px; height: 20px; background: #f5f6fa;
+        }
+        .flame {
+            position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%);
+            width: 8px; height: 12px; background: #fbc531;
+            border-radius: 50% 50% 20% 20%; animation: flicker 0.5s infinite alternate;
+        }
+        @keyframes flicker { to { transform: translateX(-50%) scale(1.1); } }
 
-        /* --- Message Section --- */
-        .message {
-            font-size: 1.3rem;
-            line-height: 1.8;
-            font-style: italic;
-            color: #fff;
+        /* --- Message Card --- */
+        .message-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 40px;
+            max-width: 600px;
+            margin-left: auto; margin-right: auto;
+            border: 1px solid rgba(255,255,255,0.3);
         }
-        
-        .message::before { content: '“'; font-size: 3rem; vertical-align: -20px; color: var(--accent); }
-        .message::after { content: '”'; font-size: 3rem; vertical-align: -40px; color: var(--accent); }
-
-        /* Animations */
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-30px);}
-            60% {transform: translateY(-15px);}
-        }
+        .message { font-size: 1.1rem; font-style: italic; line-height: 1.6; }
 
         .hidden { display: none !important; }
         .visible { display: block !important; animation: fadeIn 1s forwards; }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 100% {transform: translateY(0);} 50% {transform: translateY(-20px);} }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
-    <div class="balloon-container">
-        <div class="balloon" style="left: 10%; animation-duration: 8s; background: rgba(255, 107, 107, 0.3);"></div>
-        <div class="balloon" style="left: 20%; animation-duration: 12s; background: rgba(254, 202, 87, 0.3);"></div>
-        <div class="balloon" style="left: 50%; animation-duration: 15s; background: rgba(72, 219, 251, 0.3);"></div>
-        <div class="balloon" style="left: 70%; animation-duration: 9s; background: rgba(255, 159, 243, 0.3);"></div>
-        <div class="balloon" style="left: 85%; animation-duration: 11s; background: rgba(84, 160, 255, 0.3);"></div>
-    </div>
+    <div class="shape triangle" style="left: 10%; animation-duration: 15s;"></div>
+    <div class="shape circle" style="left: 20%; top: 50%; animation-duration: 12s; background: #ff9ff3;"></div>
+    <div class="shape triangle" style="left: 80%; animation-duration: 18s; border-bottom-color: #54a0ff;"></div>
+    <div class="shape circle" style="left: 90%; top: 20%; animation-duration: 10s; background: #feca57;"></div>
+    <div class="shape triangle" style="left: 50%; top: 80%; animation-duration: 20s; border-bottom-color: #5f27cd;"></div>
 
     <div id="entrance">
-        <div class="gift-box" onclick="openGift()">
+        <div class="gift-box-trigger" onclick="openGift()">
             🎁
             <div style="font-size: 1.2rem; margin-top: 20px; color: white; font-family: 'Poppins', sans-serif;">Click to Open</div>
         </div>
     </div>
 
     <div id="main-content">
-        <h1>Happy Birthday!</h1>
-        <p class="subtitle">✨ To the Queen of the Day ✨</p>
-
-        <div class="card character-card">
-            <div class="aura"></div> <div class="character-container">
-                <div class="hair-back"></div>
-                <div class="neck"></div>
-                <div class="dress-body"></div>
-                <div class="legs">
-                    <div class="leg"></div>
-                    <div class="leg"></div>
-                </div>
-
-                <div class="face-container">
-                    <img src="media.jpg" alt="Face">
-                </div>
+        
+        <div class="ribbon-container">
+            <div class="ribbon">
+                <h1>Happy Birthday!</h1>
             </div>
         </div>
 
-        <div class="card">
-            <h2 style="font-family: 'Pacifico', cursive; color: var(--accent);">A Special Note</h2>
+        <div class="stage-area">
+            <div class="gift-decor gift-left"></div>
+            <div class="gift-decor gift-right"></div>
+
+            <div class="actors-container">
+                <div class="character-container">
+                    <div class="hair-back"></div>
+                    <div class="neck"></div>
+                    <div class="dress-body">
+                        <div class="badge"></div>
+                    </div>
+                    <div class="legs">
+                        <div class="leg"></div>
+                        <div class="leg"></div>
+                    </div>
+                    <div class="face-container">
+                        <img src="media.jpg" alt="Face">
+                    </div>
+                </div>
+
+                <div class="cake-container">
+                    <div class="cake-layer layer-bottom"><div class="icing"></div></div>
+                    <div class="cake-layer layer-top"><div class="icing"></div></div>
+                    <div class="candle"></div>
+                    <div class="flame"></div>
+                </div>
+            </div>
+
+            <div class="podium">
+                <div class="podium-text">✨ To the Star of the Show ✨</div>
+            </div>
+        </div>
+
+        <div class="message-card">
             <p class="message">
                 “Happy Birthday! It’s me, Vir Vaibhav. I hope you achieve all your dreams and always keep smiling. ✨🌸”
             </p>
@@ -374,3 +442,4 @@
     </script>
 </body>
 </html>
+
